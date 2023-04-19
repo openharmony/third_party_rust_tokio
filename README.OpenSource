@@ -1,0 +1,11 @@
+[
+  {
+    "Name": "tokio",
+    "License": "Apache License V2.0, MIT",
+    "License File": "LICENSE-APACHE, LICENSE-MIT",
+    "Version Number": "1.20.1",
+    "Owner": "xuelei3@huawei.com",
+    "Upstream URL": "https://github.com/tokio-rs/tokio",
+    "Description": "An event-driven, non-blocking I/O platform for writing asynchronous I/O backed applications."
+  }
+]
