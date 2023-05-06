@@ -1,0 +1,34 @@
+[package]
+name = "ylong_runtime"
+version = "0.1.0"
+authors = ["Chen Mingyu <chenmingyu4@huawei.com>"]
+edition = "2018"
+description = "Async Runtime"
+license = "MIT or Apache-2.0"
+keywords = ["tokio", "runtime", "async"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "=1.20.1", features = ["rt", "rt-multi-thread", "io-util"] }
+
+[features]
+full = [
+    "current_thread_runtime",
+    "fs",
+    "sync",
+    "timer",
+    "net",
+]
+
+multi_thread_runtime = []
+
+current_thread_runtime = []
+
+fs = ["tokio/fs"]
+
+sync = ["tokio/sync"]
+
+timer = ["tokio/time"]
+
+net = ["tokio/net"]
