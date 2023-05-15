@@ -22,6 +22,14 @@ ohos_cargo_crate("lib") {
   cargo_pkg_version = "0.1.0"
   cargo_pkg_authors = "Chen Mingyu <chenmingyu4@huawei.com>"
   cargo_pkg_name = "ylong_runtime"
-  deps = [ "//third_party/rust/tokio:lib" ]
-  features = [ "full" ]
+  deps = [ "//third_party/rust/crates/tokio/tokio:lib" ]
+  features = [
+      "full",
+      "multi_thread_runtime",
+      "current_thread_runtime",
+      "fs",
+      "sync",
+      "timer",
+      "net"
+  ]
 }
