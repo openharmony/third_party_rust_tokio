@@ -11,18 +11,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/templates/rust/ohos_cargo_crate.gni")
+import("//build/ohos.gni")
 
-ohos_cargo_crate("lib") {
+ohos_rust_shared_library("lib") {
   crate_name = "ylong_runtime"
-  crate_type = "rlib"
+  crate_type = "dylib"
   crate_root = "src/lib.rs"
 
   sources = [ "src/lib.rs" ]
-  cargo_pkg_version = "0.1.0"
-  cargo_pkg_authors = "Chen Mingyu <chenmingyu4@huawei.com>"
-  cargo_pkg_name = "ylong_runtime"
-  deps = [ "//third_party/rust/crates/tokio/tokio:lib" ]
+  deps = [ "//third_party/rust/crates/tokio/tokio:dylib" ]
   features = [
     "full",
     "multi_thread_runtime",

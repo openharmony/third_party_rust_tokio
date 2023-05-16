@@ -13,7 +13,7 @@
 
 import("//build/ohos.gni")
 
-ohos_cargo_crate("lib") {
+ohos_cargo_crate("rlib") {
   crate_name = "tokio"
   crate_type = "rlib"
   crate_root = "src/lib.rs"
@@ -23,6 +23,35 @@ ohos_cargo_crate("lib") {
   cargo_pkg_version = "1.20.1"
   cargo_pkg_authors = "Tokio Contributors <team@tokio.rs>"
   cargo_pkg_name = "tokio"
+  deps = [
+    "//third_party/rust/crates/bytes:lib",
+    "//third_party/rust/crates/libc:lib",
+    "//third_party/rust/crates/memchr:lib",
+    "//third_party/rust/crates/mio:lib",
+    "//third_party/rust/crates/num_cpus:lib",
+    "//third_party/rust/crates/once_cell:lib",
+    "//third_party/rust/crates/pin-project-lite:lib",
+    "//third_party/rust/crates/socket2:lib",
+  ]
+  features = [
+    "default",
+    "io-util",
+    "rt-multi-thread",
+    "fs",
+    "sync",
+    "net",
+    "rt",
+    "time",
+  ]
+}
+
+ohos_rust_shared_library("dylib") {
+  crate_name = "tokio"
+  crate_type = "dylib"
+  crate_root = "src/lib.rs"
+
+  sources = [ "src/lib.rs" ]
+  edition = "2018"
   deps = [
     "//third_party/rust/crates/bytes:lib",
     "//third_party/rust/crates/libc:lib",
