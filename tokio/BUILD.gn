@@ -45,7 +45,7 @@ ohos_cargo_crate("rlib") {
   ]
 }
 
-ohos_rust_shared_library("dylib") {
+ohos_rust_shared_library("lib") {
   crate_name = "tokio"
   crate_type = "dylib"
   crate_root = "src/lib.rs"
