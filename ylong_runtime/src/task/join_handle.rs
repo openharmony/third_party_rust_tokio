@@ -31,3 +31,10 @@ impl<R> Future for JoinHandle<R> {
         Pin::new(&mut this.0).poll(cx).map_err(io::Error::from)
     }
 }
+
+impl<R> JoinHandle<R> {
+    /// Abort the task associated with the handle.
+    pub fn cancel(&self) {
+        self.0.abort()
+    }
+}
