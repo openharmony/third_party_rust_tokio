@@ -18,6 +18,9 @@ ohos_rust_shared_library("lib") {
   crate_type = "dylib"
   crate_root = "src/lib.rs"
 
+  part_name = "rust_tokio"
+  subsystem_name = "thirdparty"
+
   sources = [ "src/lib.rs" ]
   deps = [ "//third_party/rust/crates/tokio/tokio:lib" ]
   features = [
