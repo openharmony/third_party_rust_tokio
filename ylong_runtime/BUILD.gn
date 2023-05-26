@@ -18,7 +18,7 @@ ohos_rust_shared_library("lib") {
   crate_type = "dylib"
   crate_root = "src/lib.rs"
 
-  part_name = "rust_tokio"
+  part_name = "ylong_runtime"
   subsystem_name = "thirdparty"
 
   sources = [ "src/lib.rs" ]

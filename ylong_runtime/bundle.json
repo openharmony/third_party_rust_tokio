@@ -1,11 +1,11 @@
 {
-    "name": "@ohos/rust_tokio",
-    "description": "Rust runtime implementation",
+    "name": "@ohos/ylong_runtime",
+    "description": "Ylong runtime implementation",
     "version": "4.0",
     "license": "MIT",
     "publishAs": "code-segment",
     "segment": {
-        "destPath": "third_party/rust/crates/tokio"
+        "destPath": "third_party/rust/crates/tokio/ylong_runtime"
     },
     "dirs": {},
     "scripts": {},
@@ -15,7 +15,7 @@
         "zh": "README_zh.md"
     },
     "component": {
-        "name": "rust_tokio",
+        "name": "ylong_runtime",
         "subsystem": "thirdparty",
         "syscap": [],
         "features": [],
@@ -28,7 +28,7 @@
         },
         "build": {
             "sub_component": [
-                "//third_party/rust/crates/tokio/tokio:lib"
+                "//third_party/rust/crates/tokio/ylong_runtime:lib"
             ],
             "inner_kits": [],
             "test": []
