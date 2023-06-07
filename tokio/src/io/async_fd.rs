@@ -1,4 +1,6 @@
-use crate::io::driver::{Handle, Interest, ReadyEvent, Registration};
+use crate::io::Interest;
+use crate::runtime::io::{ReadyEvent, Registration};
+use crate::runtime::scheduler;
 
 use mio::unix::SourceFd;
 use std::io;
@@ -199,12 +201,13 @@ impl<T: AsRawFd> AsyncFd<T> {
     where
         T: AsRawFd,
     {
-        Self::new_with_handle_and_interest(inner, Handle::current(), interest)
+        Self::new_with_handle_and_interest(inner, scheduler::Handle::current(), interest)
     }
 
+    #[track_caller]
     pub(crate) fn new_with_handle_and_interest(
         inner: T,
-        handle: Handle,
+        handle: scheduler::Handle,
         interest: Interest,
     ) -> io::Result<Self> {
         let fd = inner.as_raw_fd();

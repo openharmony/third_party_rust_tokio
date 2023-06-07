@@ -3,7 +3,7 @@
     "Name": "tokio",
     "License": "MIT",
     "License File": "LICENSE",
-    "Version Number": "1.20.1",
+    "Version Number": "1.25.0",
     "Owner": "xuelei3@huawei.com",
     "Upstream URL": "https://github.com/tokio-rs/tokio",
     "Description": "An event-driven, non-blocking I/O platform for writing asynchronous I/O backed applications."

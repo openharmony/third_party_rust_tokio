@@ -9,10 +9,10 @@
 //! # Usage
 //!
 //! [`channel`] returns a [`Sender`] / [`Receiver`] pair. These are the producer
-//! and sender halves of the channel. The channel is created with an initial
+//! and consumer halves of the channel. The channel is created with an initial
 //! value. The **latest** value stored in the channel is accessed with
 //! [`Receiver::borrow()`]. Awaiting [`Receiver::changed()`] waits for a new
-//! value to sent by the [`Sender`] half.
+//! value to be sent by the [`Sender`] half.
 //!
 //! # Examples
 //!
@@ -20,15 +20,15 @@
 //! use tokio::sync::watch;
 //!
 //! # async fn dox() -> Result<(), Box<dyn std::error::Error>> {
-//!     let (tx, mut rx) = watch::channel("hello");
+//! let (tx, mut rx) = watch::channel("hello");
 //!
-//!     tokio::spawn(async move {
-//!         while rx.changed().await.is_ok() {
-//!             println!("received = {:?}", *rx.borrow());
-//!         }
-//!     });
+//! tokio::spawn(async move {
+//!     while rx.changed().await.is_ok() {
+//!         println!("received = {:?}", *rx.borrow());
+//!     }
+//! });
 //!
-//!     tx.send("world")?;
+//! tx.send("world")?;
 //! # Ok(())
 //! # }
 //! ```
@@ -90,10 +90,11 @@ pub struct Sender<T> {
 /// Returns a reference to the inner value.
 ///
 /// Outstanding borrows hold a read lock on the inner value. This means that
-/// long lived borrows could cause the produce half to block. It is recommended
-/// to keep the borrow as short lived as possible. Additionally, if you are
+/// long-lived borrows could cause the producer half to block. It is recommended
+/// to keep the borrow as short-lived as possible. Additionally, if you are
 /// running in an environment that allows `!Send` futures, you must ensure that
-/// the returned `Ref` type is never held alive across an `.await` point.
+/// the returned `Ref` type is never held alive across an `.await` point,
+/// otherwise, it can lead to a deadlock.
 ///
 /// The priority policy of the lock is dependent on the underlying lock
 /// implementation, and this type does not guarantee that any particular policy
@@ -350,11 +351,12 @@ impl<T> Receiver<T> {
     /// [`changed`] may return immediately even if you have already seen the
     /// value with a call to `borrow`.
     ///
-    /// Outstanding borrows hold a read lock. This means that long lived borrows
-    /// could cause the send half to block. It is recommended to keep the borrow
-    /// as short lived as possible. Additionally, if you are running in an
-    /// environment that allows `!Send` futures, you must ensure that the
-    /// returned `Ref` type is never held alive across an `.await` point.
+    /// Outstanding borrows hold a read lock on the inner value. This means that
+    /// long-lived borrows could cause the producer half to block. It is recommended
+    /// to keep the borrow as short-lived as possible. Additionally, if you are
+    /// running in an environment that allows `!Send` futures, you must ensure that
+    /// the returned `Ref` type is never held alive across an `.await` point,
+    /// otherwise, it can lead to a deadlock.
     ///
     /// The priority policy of the lock is dependent on the underlying lock
     /// implementation, and this type does not guarantee that any particular policy
@@ -401,11 +403,12 @@ impl<T> Receiver<T> {
     /// will not return immediately until the [`Sender`] has modified the shared
     /// value again.
     ///
-    /// Outstanding borrows hold a read lock. This means that long lived borrows
-    /// could cause the send half to block. It is recommended to keep the borrow
-    /// as short lived as possible. Additionally, if you are running in an
-    /// environment that allows `!Send` futures, you must ensure that the
-    /// returned `Ref` type is never held alive across an `.await` point.
+    /// Outstanding borrows hold a read lock on the inner value. This means that
+    /// long-lived borrows could cause the producer half to block. It is recommended
+    /// to keep the borrow as short-lived as possible. Additionally, if you are
+    /// running in an environment that allows `!Send` futures, you must ensure that
+    /// the returned `Ref` type is never held alive across an `.await` point,
+    /// otherwise, it can lead to a deadlock.
     ///
     /// The priority policy of the lock is dependent on the underlying lock
     /// implementation, and this type does not guarantee that any particular policy
@@ -604,8 +607,22 @@ impl<T> Drop for Receiver<T> {
 impl<T> Sender<T> {
     /// Sends a new value via the channel, notifying all receivers.
     ///
-    /// This method fails if the channel has been closed, which happens when
-    /// every receiver has been dropped.
+    /// This method fails if the channel is closed, which is the case when
+    /// every receiver has been dropped. It is possible to reopen the channel
+    /// using the [`subscribe`] method. However, when `send` fails, the value
+    /// isn't made available for future receivers (but returned with the
+    /// [`SendError`]).
+    ///
+    /// To always make a new value available for future receivers, even if no
+    /// receiver currently exists, one of the other send methods
+    /// ([`send_if_modified`], [`send_modify`], or [`send_replace`]) can be
+    /// used instead.
+    ///
+    /// [`subscribe`]: Sender::subscribe
+    /// [`SendError`]: error::SendError
+    /// [`send_if_modified`]: Sender::send_if_modified
+    /// [`send_modify`]: Sender::send_modify
+    /// [`send_replace`]: Sender::send_replace
     pub fn send(&self, value: T) -> Result<(), error::SendError<T>> {
         // This is pretty much only useful as a hint anyway, so synchronization isn't critical.
         if 0 == self.receiver_count() {
@@ -665,7 +682,7 @@ impl<T> Sender<T> {
     ///
     /// The `modify` closure must return `true` if the value has actually
     /// been modified during the mutable borrow. It should only return `false`
-    /// if the value is guaranteed to be unnmodified despite the mutable
+    /// if the value is guaranteed to be unmodified despite the mutable
     /// borrow.
     ///
     /// Receivers are only notified if the closure returned `true`. If the
@@ -780,9 +797,12 @@ impl<T> Sender<T> {
 
     /// Returns a reference to the most recently sent value
     ///
-    /// Outstanding borrows hold a read lock. This means that long lived borrows
-    /// could cause the send half to block. It is recommended to keep the borrow
-    /// as short lived as possible.
+    /// Outstanding borrows hold a read lock on the inner value. This means that
+    /// long-lived borrows could cause the producer half to block. It is recommended
+    /// to keep the borrow as short-lived as possible. Additionally, if you are
+    /// running in an environment that allows `!Send` futures, you must ensure that
+    /// the returned `Ref` type is never held alive across an `.await` point,
+    /// otherwise, it can lead to a deadlock.
     ///
     /// # Examples
     ///
