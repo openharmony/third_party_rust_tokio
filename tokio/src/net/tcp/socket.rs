@@ -398,6 +398,89 @@ impl TcpSocket {
         self.inner.linger()
     }
 
+    /// Gets the value of the `IP_TOS` option for this socket.
+    ///
+    /// For more information about this option, see [`set_tos`].
+    ///
+    /// **NOTE:** On Windows, `IP_TOS` is only supported on [Windows 8+ or
+    /// Windows Server 2012+.](https://docs.microsoft.com/en-us/windows/win32/winsock/ipproto-ip-socket-options)
+    ///
+    /// [`set_tos`]: Self::set_tos
+    // https://docs.rs/socket2/0.4.2/src/socket2/socket.rs.html#1178
+    #[cfg(not(any(
+        target_os = "fuchsia",
+        target_os = "redox",
+        target_os = "solaris",
+        target_os = "illumos",
+    )))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(not(any(
+            target_os = "fuchsia",
+            target_os = "redox",
+            target_os = "solaris",
+            target_os = "illumos",
+        ))))
+    )]
+    pub fn tos(&self) -> io::Result<u32> {
+        self.inner.tos()
+    }
+
+    /// Sets the value for the `IP_TOS` option on this socket.
+    ///
+    /// This value sets the type-of-service field that is used in every packet
+    /// sent from this socket.
+    ///
+    /// **NOTE:** On Windows, `IP_TOS` is only supported on [Windows 8+ or
+    /// Windows Server 2012+.](https://docs.microsoft.com/en-us/windows/win32/winsock/ipproto-ip-socket-options)
+    // https://docs.rs/socket2/0.4.2/src/socket2/socket.rs.html#1178
+    #[cfg(not(any(
+        target_os = "fuchsia",
+        target_os = "redox",
+        target_os = "solaris",
+        target_os = "illumos",
+    )))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(not(any(
+            target_os = "fuchsia",
+            target_os = "redox",
+            target_os = "solaris",
+            target_os = "illumos",
+        ))))
+    )]
+    pub fn set_tos(&self, tos: u32) -> io::Result<()> {
+        self.inner.set_tos(tos)
+    }
+
+    /// Gets the value for the `SO_BINDTODEVICE` option on this socket
+    ///
+    /// This value gets the socket binded device's interface name.
+    #[cfg(any(target_os = "android", target_os = "fuchsia", target_os = "linux",))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(any(target_os = "android", target_os = "fuchsia", target_os = "linux",)))
+    )]
+    pub fn device(&self) -> io::Result<Option<Vec<u8>>> {
+        self.inner.device()
+    }
+
+    /// Sets the value for the `SO_BINDTODEVICE` option on this socket
+    ///
+    /// If a socket is bound to an interface, only packets received from that
+    /// particular interface are processed by the socket. Note that this only
+    /// works for some socket types, particularly `AF_INET` sockets.
+    ///
+    /// If `interface` is `None` or an empty string it removes the binding.
+    #[cfg(all(any(target_os = "android", target_os = "fuchsia", target_os = "linux")))]
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(any(target_os = "android", target_os = "fuchsia", target_os = "linux"))))
+    )]
+    pub fn bind_device(&self, interface: Option<&[u8]>) -> io::Result<()> {
+        self.inner.bind_device(interface)
+    }
+
     /// Gets the local address of this socket.
     ///
     /// Will fail on windows if called before `bind`.
@@ -587,6 +670,15 @@ impl TcpSocket {
     /// [`std::net::TcpStream`]: struct@std::net::TcpStream
     /// [`socket2`]: https://docs.rs/socket2/
     ///
+    /// # Notes
+    ///
+    /// The caller is responsible for ensuring that the socket is in
+    /// non-blocking mode. Otherwise all I/O operations on the socket
+    /// will block the thread, which will cause unexpected behavior.
+    /// Non-blocking mode can be set using [`set_nonblocking`].
+    ///
+    /// [`set_nonblocking`]: std::net::TcpStream::set_nonblocking
+    ///
     /// # Examples
     ///
     /// ```
@@ -595,8 +687,8 @@ impl TcpSocket {
     ///
     /// #[tokio::main]
     /// async fn main() -> std::io::Result<()> {
-    ///
     ///     let socket2_socket = Socket::new(Domain::IPV4, Type::STREAM, None)?;
+    ///     socket2_socket.set_nonblocking(true)?;
     ///
     ///     let socket = TcpSocket::from_std_stream(socket2_socket.into());
     ///
