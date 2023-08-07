@@ -141,6 +141,30 @@ impl File {
     pub async fn metadata(&self) -> io::Result<Metadata> {
         self.0.metadata().await
     }
+
+    /// Truncates or extends the underlying file, updating the size of this file to become size.
+    ///
+    /// If the size is less than the current file's size, then the file will be
+    /// shrunk. If it is greater than the current file's size, then the file
+    /// will be extended to size and have all of the intermediate data filled in
+    /// with 0s.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use ylong_runtime::fs::File;
+    /// use ylong_runtime::io::AsyncWriteExt;
+    ///
+    /// async fn set_length() -> std::io::Result<()> {
+    ///    let mut file = File::create("foo.txt").await?;
+    ///    file.write_all(b"Hello World!").await?;
+    ///    file.set_len(10).await?;
+    ///    Ok(())
+    /// }
+    /// ```
+    pub async fn set_len(&self, size: u64) -> io::Result<()> {
+        self.0.set_len(size).await
+    }
 }
 
 impl AsyncSeek for File {
